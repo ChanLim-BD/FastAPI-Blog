@@ -1,2 +1,4 @@
 venv
 db_info.txt
+x.sql
+__pycache__
