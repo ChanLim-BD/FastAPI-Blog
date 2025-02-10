@@ -22,3 +22,15 @@ def direct_get_conn():
     except SQLAlchemyError as e:
         print(e)
         raise e
+    
+
+def context_get_conn():
+    conn = None
+    try:
+        conn = engine.connect()
+        yield conn
+    except SQLAlchemyError as e:
+        print(e)
+        raise e
+    finally:
+        conn.close()
