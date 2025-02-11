@@ -41,4 +41,5 @@ def context_get_conn():
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                             detail="요청하신 서비스가 잠시 내부적으로 문제가 발생하였습니다.")
     finally:
-        conn.close()
+        if conn:
+            conn.close()

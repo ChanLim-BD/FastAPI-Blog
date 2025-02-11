@@ -77,9 +77,9 @@ def update_blog(request: Request, id: int
     blog_svc.update_blog(conn=conn, id=id, title=title, author=author, content=content)
     return RedirectResponse(f"/blogs/show/{id}", status_code=status.HTTP_302_FOUND)
     
-@router.post("/delete/{id}")
+@router.delete("/delete/{id}")
 def delete_blog(request: Request, id: int
                 , conn: Connection = Depends(context_get_conn)):
     
     blog_svc.delete_blog(conn=conn, id=id)
-    return RedirectResponse("/blogs", status_code=status.HTTP_302_FOUND)
+    # return RedirectResponse("/blogs", status_code=status.HTTP_302_FOUND)
