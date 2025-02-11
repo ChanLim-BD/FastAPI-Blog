@@ -108,3 +108,56 @@ def create_blog(request: Request
     except SQLAlchemyError as e:
         print(e)
         conn.rollback()         # 사실 안해도 되지만,,
+
+
+@router.get("/edit/{id}")
+def update_blog_ui(request: Request, id: int, conn = Depends(context_get_conn)):
+    try:
+        query = f"""
+        SELECT id, title, author, content from blog where id = :id
+        """
+        stmt = text(query)
+        bind_stmt = stmt.bindparams(id=id)
+        result = conn.execute(bind_stmt)
+
+        if result.rowcount == 0:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"해당 id {id}는(은) 존재하지 않습니다.")
+        
+        row = result.fetchone()
+        
+        return templates.TemplateResponse(
+            request = request,
+            name = "edit_blog.html",
+            context = {"id": row.id, "title": row.title, "author": row.author, "content": row.content}
+        )
+    except SQLAlchemyError as e:
+        print(e)
+        raise e
+    
+
+@router.post("/edit/{id}")
+def update_blog(request: Request
+                , id: int
+                , title = Form(min_length=2, max_length=200)
+                , author = Form(max_length=100)
+                , content = Form(min_length=2, max_length=4000)
+                , conn: Connection = Depends(context_get_conn)):
+    try:
+        query = f"""
+        UPDATE blog 
+        SET title = :title , author= :author, content= :content
+        where id = :id
+        """
+        bind_stmt = text(query).bindparams(id=id, title=title, 
+                                           author=author, content=content)
+        result = conn.execute(bind_stmt)
+        # 해당 id로 데이터가 존재하지 않아 update 건수가 없으면 오류를 던진다.
+        if result.rowcount == 0:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"해당 id {id}는(은) 존재하지 않습니다.")
+        conn.commit()
+        return RedirectResponse(f"/blogs/show/{id}", status_code=status.HTTP_302_FOUND)
+    except SQLAlchemyError as e:
+        print(e)
+        raise e
