@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request, Depends, status
+from fastapi import APIRouter, Request, Depends, Form, status
+from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
 from fastapi.templating import Jinja2Templates
 from db.database import direct_get_conn, context_get_conn
@@ -78,3 +79,32 @@ async def get_blog_by_id(request: Request, id: int, conn: Connection = Depends(c
     except SQLAlchemyError as e:
         print(e)
         raise(e)
+
+
+@router.get("/new")
+def create_blog_ui(request: Request):
+    return templates.TemplateResponse(
+        request = request,
+        name = "new_blog.html",
+        context = {}    
+    )
+
+
+@router.post("/new")
+def create_blog(request: Request
+                , title = Form(min_length=2, max_length=200)
+                , author = Form(max_length=100)
+                , content = Form(min_length=2, max_length=4000)
+                , conn: Connection = Depends(context_get_conn)):
+    try:
+        query = f"""
+        INSERT INTO blog(title, author, content, modified_dt)
+        VALUES ('{title}', '{author}', '{content}', now())
+        """
+        conn.execute(text(query))
+        conn.commit()
+
+        return RedirectResponse("/blogs", status_code=status.HTTP_302_FOUND)
+    except SQLAlchemyError as e:
+        print(e)
+        conn.rollback()         # 사실 안해도 되지만,,
