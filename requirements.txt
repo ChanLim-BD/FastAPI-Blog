@@ -2,5 +2,5 @@ fastapi[standard]
 fastapi
 SQLAlchemy
 mysql-connector-python
-
+python-dotenv
 
