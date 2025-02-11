@@ -40,7 +40,12 @@ async def get_all_blogs(request: Request):
     
     except SQLAlchemyError as e:
         print(e)
-        raise(e)
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                            detail="요청하신 서비스가 잠시 내부적으로 문제가 발생하였습니다.")
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="알수없는 이유로 서비스 오류가 발생하였습니다")
     finally:
         if conn:
             conn.close()
@@ -78,7 +83,12 @@ async def get_blog_by_id(request: Request, id: int, conn: Connection = Depends(c
     
     except SQLAlchemyError as e:
         print(e)
-        raise(e)
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                            detail="요청하신 서비스가 잠시 내부적으로 문제가 발생하였습니다.")
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="알수없는 이유로 서비스 오류가 발생하였습니다")
 
 
 @router.get("/new")
@@ -133,7 +143,9 @@ def update_blog_ui(request: Request, id: int, conn = Depends(context_get_conn)):
         )
     except SQLAlchemyError as e:
         print(e)
-        raise e
+        conn.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="요청데이터가 제대로 전달되지 않았습니다.")
     
 
 @router.post("/edit/{id}")
@@ -160,7 +172,8 @@ def update_blog(request: Request
         return RedirectResponse(f"/blogs/show/{id}", status_code=status.HTTP_302_FOUND)
     except SQLAlchemyError as e:
         print(e)
-        raise e
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="요청데이터가 제대로 전달되지 않았습니다.")
     
 
 @router.post("/delete/{id}")
@@ -184,3 +197,5 @@ def delete_blog(request: Request, id: int
     except SQLAlchemyError as e:
         print(e)
         conn.rollback()
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                            detail="요청하신 서비스가 잠시 내부적으로 문제가 발생하였습니다.")
