@@ -161,3 +161,26 @@ def update_blog(request: Request
     except SQLAlchemyError as e:
         print(e)
         raise e
+    
+
+@router.post("/delete/{id}")
+def delete_blog(request: Request, id: int
+                , conn: Connection = Depends(context_get_conn)):
+    try:
+        query = f"""
+        DELETE FROM blog
+        where id = :id
+        """
+
+        bind_stmt = text(query).bindparams(id=id)
+        result = conn.execute(bind_stmt)
+        # 해당 id로 데이터가 존재하지 않아 delete 건수가 없으면 오류를 던진다.
+        if result.rowcount == 0:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"해당 id {id}는(은) 존재하지 않습니다.")
+        conn.commit()
+        return RedirectResponse("/blogs", status_code=status.HTTP_302_FOUND)
+
+    except SQLAlchemyError as e:
+        print(e)
+        conn.rollback()
