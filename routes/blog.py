@@ -82,8 +82,14 @@ async def update_blog(request: Request, id: int
                 , imagefile: UploadFile | None = File(None)
                 , conn: Connection = Depends(context_get_conn)):
     
-    image_loc = None
+    blog = await blog_svc.get_blog_by_id(conn, id=id)
+    image_loc = blog.image_loc
     if len(imagefile.filename.strip()) > 0:
+        if image_loc is not None:
+            image_path = "." + image_loc
+            if os.path.exists(image_path):
+                print("image_path:", image_path)
+                os.remove(image_path)
         image_loc = await blog_svc.upload_file(author=author, imagefile=imagefile)
         await blog_svc.update_blog(conn=conn, id=id, title=title, author=author, content=content, image_loc=image_loc)
     else:
