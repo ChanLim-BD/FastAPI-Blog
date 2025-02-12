@@ -1,4 +1,5 @@
 import os, time
+import aiofiles as aio
 
 from fastapi import status, UploadFile
 from fastapi.exceptions import HTTPException
@@ -14,7 +15,7 @@ load_dotenv()
 UPLOAD_DIR = os.getenv("UPLOAD_DIR")
 
 
-def get_all_blogs(conn: Connection) -> List:
+async def get_all_blogs(conn: Connection) -> List:
     try:
         query = """
         SELECT id, title, author, content, 
@@ -22,7 +23,7 @@ def get_all_blogs(conn: Connection) -> List:
              else image_loc end as image_loc
         , modified_dt FROM blog;
         """
-        result = conn.execute(text(query))
+        result = await conn.execute(text(query))
         all_blogs = [BlogData(id=row.id,
               title=row.title,
               author=row.author,
@@ -42,7 +43,7 @@ def get_all_blogs(conn: Connection) -> List:
                             detail="알수없는 이유로 서비스 오류가 발생하였습니다")
 
 
-def get_blog_by_id(conn: Connection, id: int):
+async def get_blog_by_id(conn: Connection, id: int):
     try:
         query = f"""
         SELECT id, title, author, content, image_loc, modified_dt from blog
@@ -50,7 +51,7 @@ def get_blog_by_id(conn: Connection, id: int):
         """
         stmt = text(query)
         bind_stmt = stmt.bindparams(id=id)
-        result = conn.execute(bind_stmt)
+        result = await conn.execute(bind_stmt)
         # 만약에 한건도 찾지 못하면 오류를 던진다. 
         if result.rowcount == 0:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -74,7 +75,7 @@ def get_blog_by_id(conn: Connection, id: int):
                             detail="알수없는 이유로 서비스 오류가 발생하였습니다")
     
 
-def upload_file(author: str, imagefile: UploadFile = None):
+async def upload_file(author: str, imagefile: UploadFile = None):
     try:
         user_dir = f"{UPLOAD_DIR}/{author}/"
         if not os.path.exists(user_dir):
@@ -84,9 +85,9 @@ def upload_file(author: str, imagefile: UploadFile = None):
         upload_filename = f"{filename_only}_{(int)(time.time())}{ext}"
         upload_image_loc = user_dir + upload_filename
 
-        with open(upload_image_loc, "wb") as outfile:
-            while content := imagefile.file.read(1024):
-                outfile.write(content)
+        async with aio.open(upload_image_loc, "wb") as outfile:
+            while content := await imagefile.read(1024):
+                await outfile.write(content)
         print("upload succeeded:", upload_image_loc)
 
         return upload_image_loc[1:]
@@ -97,22 +98,22 @@ def upload_file(author: str, imagefile: UploadFile = None):
                             detail="이미지 파일이 제대로 Upload되지 않았습니다. ")
 
 
-def create_blog(conn: Connection, title:str, author: str, content:str, image_loc = None):
+async def create_blog(conn: Connection, title:str, author: str, content:str, image_loc = None):
     try:
         query = f"""
         INSERT INTO blog(title, author, content, image_loc, modified_dt)
         values ('{title}', '{author}', '{content}', {util.none_to_null(image_loc, is_squote=True)}, now())
         """
-        conn.execute(text(query))
-        conn.commit()
+        await conn.execute(text(query))
+        await conn.commit()
         
     except SQLAlchemyError as e:
         print(e)
-        conn.rollback()
+        await conn.rollback()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="요청데이터가 제대로 전달되지 않았습니다.")
 
-def update_blog(conn: Connection,  id: int
+async def update_blog(conn: Connection,  id: int
                 ,  title:str
                 , author: str
                 , content:str
@@ -125,12 +126,12 @@ def update_blog(conn: Connection,  id: int
         where id = :id
         """
         bind_stmt = text(query).bindparams(id=id, title=title, author=author, content=content, image_loc=image_loc)
-        result = conn.execute(bind_stmt)
+        result = await conn.execute(bind_stmt)
         # 해당 id로 데이터가 존재하지 않아 update 건수가 없으면 오류를 던진다.
         if result.rowcount == 0:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"해당 id {id}는(은) 존재하지 않습니다.")
-        conn.commit()
+        await conn.commit()
         
     except SQLAlchemyError as e:
         print(e)
@@ -140,7 +141,7 @@ def update_blog(conn: Connection,  id: int
     
 
 
-def delete_blog(conn: Connection, id: int, image_loc: str = None):
+async def delete_blog(conn: Connection, id: int, image_loc: str = None):
     try:
         query = f"""
         DELETE FROM blog
@@ -148,12 +149,12 @@ def delete_blog(conn: Connection, id: int, image_loc: str = None):
         """
 
         bind_stmt = text(query).bindparams(id=id)
-        result = conn.execute(bind_stmt)
+        result = await conn.execute(bind_stmt)
         # 해당 id로 데이터가 존재하지 않아 delete 건수가 없으면 오류를 던진다.
         if result.rowcount == 0:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"해당 id {id}는(은) 존재하지 않습니다.")
-        conn.commit()
+        await conn.commit()
 
         if image_loc is not None:
             image_path = "." + image_loc
@@ -163,11 +164,11 @@ def delete_blog(conn: Connection, id: int, image_loc: str = None):
 
     except SQLAlchemyError as e:
         print(e)
-        conn.rollback()
+        await conn.rollback()
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                             detail="요청하신 서비스가 잠시 내부적으로 문제가 발생하였습니다.")
     except Exception as e:
         print(e)
-        conn.rollback()
+        await conn.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="알수없는 이유로 문제가 발생하였습니다. ")

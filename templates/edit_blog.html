@@ -14,11 +14,18 @@
                         <input type="text" class="form-control" id="title" name="title" value="{{ blog.title }}">
                     </div>
 
-                    <!-- Image Input -->
-                    <div class="mb-3">
-                        <label for="imagefile" class="form-label">Post Image</label>
-                        <input type="file" class="form-control" id="imagefile" name="imagefile" />
-                    </div>
+                <!-- Image Input -->
+                <div class="mb-3">
+                    <label for="imagefile" class="form-label">Post Image</label>
+                    <!-- 기존 이미지가 있는 경우 보여주기 -->
+                    {% if blog.image_loc %}
+                        <div>
+                            <label>현재 이미지:</label>
+                            <img src="{{ blog.image_loc }}" alt="Current Image" style="max-width: 200px; max-height: 150px; margin-top: 10px;">
+                        </div>
+                    {% endif %}
+                    <input type="file" class="form-control" id="imagefile" name="imagefile" />
+                </div>
                     
                     <!-- Content Textarea -->
                     <div class="mb-3">
