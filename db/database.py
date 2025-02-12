@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 
 
 # database connection URL
-# DATABASE_CONN = "mysql+mysqlconnector://root:1234qwer@localhost:3306/blog_db"
 load_dotenv()
 DATABASE_CONN = os.getenv("DATABASE_CONN")
 
