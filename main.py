@@ -1,21 +1,15 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from routes import blog
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import RedirectResponse
-from contextlib import asynccontextmanager
-from db.database import engine
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # FastAPI 인스턴스 기동시 필요한 작업 수행. 
-    print("Starting up...")
-    yield
+from routes import blog
 
-    #FastAPI 인스턴스 종료시 필요한 작업 수행
-    print("Shutting down...")
-    await engine.dispose()
+from utils.common import lifespan
+from utils import exc_handler
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(blog.router)
@@ -23,3 +17,6 @@ app.include_router(blog.router)
 @app.get("/")
 def redirect_to_blogs():
     return RedirectResponse(url="/blogs")
+
+app.add_exception_handler(StarletteHTTPException, exc_handler.custom_http_exception_handler)
+app.add_exception_handler(RequestValidationError, exc_handler.validation_exception_handler)

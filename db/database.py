@@ -14,6 +14,9 @@ from dotenv import load_dotenv
 load_dotenv()
 DATABASE_CONN = os.getenv("DATABASE_CONN")
 
+# engine = create_engine(DATABASE_CONN, #echo=True,
+#                        poolclass=QueuePool,
+
 engine: AsyncEngine = create_async_engine(DATABASE_CONN, #echo=True,
                     #   poolclass=QueuePool,
                     #   poolclass=NullPool, # Connection Pool 사용하지 않음. 
