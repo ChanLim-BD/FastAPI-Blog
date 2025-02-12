@@ -7,11 +7,12 @@ from fastapi.responses import RedirectResponse
 from routes import blog
 
 from utils.common import lifespan
-from utils import exc_handler
+from utils import exc_handler, middleware
 
 app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(middleware.DummyMiddleware)
 app.include_router(blog.router)
 
 @app.get("/")
