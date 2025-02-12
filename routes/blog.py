@@ -74,7 +74,7 @@ async def update_blog_ui(request: Request, id: int, conn = Depends(context_get_c
     )
 
     
-@router.post("/edit/{id}")
+@router.put("/edit/{id}")
 async def update_blog(request: Request, id: int
                 , title = Form(min_length=2, max_length=200)
                 , author = Form(max_length=100)

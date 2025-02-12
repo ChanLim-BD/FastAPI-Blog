@@ -12,7 +12,10 @@ from utils import exc_handler, middleware
 app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 app.add_middleware(middleware.DummyMiddleware)
+app.add_middleware(middleware.MethodOverrideMiddleware)     # 얘 부터 적용됨...
+
 app.include_router(blog.router)
 
 @app.get("/")
