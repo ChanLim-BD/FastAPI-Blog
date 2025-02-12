@@ -48,7 +48,7 @@ Clone the repository and set up locally:
    uvicorn main:app --port=8081 --reload
    ```
 
-5. Open your browser and navigate to: `http://localhost:8000/`.
+5. Open your browser and navigate to: `http://localhost:8081/`.
 ---
 
 ## 📷 ScreenShot
