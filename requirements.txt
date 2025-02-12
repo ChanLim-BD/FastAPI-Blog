@@ -7,3 +7,6 @@ python-multipart
 pymysql
 aiomysql
 aiofiles
+bcrypt
+passlib[bcrypt]
+itsdangerous
