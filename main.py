@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
-from routes import blog
+from routes import blog, auth
 
 from utils.common import lifespan
 from utils import exc_handler, middleware
@@ -24,6 +24,7 @@ app.add_middleware(middleware.DummyMiddleware)
 app.add_middleware(middleware.MethodOverrideMiddleware)     # 얘 부터 적용됨...
 
 app.include_router(blog.router)
+app.include_router(auth.router)
 
 @app.get("/")
 def redirect_to_blogs():

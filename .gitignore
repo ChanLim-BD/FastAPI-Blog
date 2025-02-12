@@ -4,3 +4,4 @@ x.sql
 __pycache__
 .env
 /static/uploads/*
+mysql.sh
