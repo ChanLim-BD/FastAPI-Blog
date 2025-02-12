@@ -155,8 +155,8 @@ async def delete_blog(conn: Connection, id: int, image_loc: str = None):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"해당 id {id}는(은) 존재하지 않습니다.")
         await conn.commit()
-
-        if image_loc is not None:
+        
+        if image_loc is not None and image_loc != '/static/default/blog_default.png':
             image_path = "." + image_loc
             if os.path.exists(image_path):
                 print("image_path:", image_path)
