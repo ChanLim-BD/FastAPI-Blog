@@ -1,13 +1,68 @@
 # FastAPI-Blog
-Blog를 Fast API로 구현하여 Fast API 이해 및 숙련도를 상승시키기.
 
+![Image](https://github.com/user-attachments/assets/bbedfc02-2e96-415d-b61b-7f9012f848b8)
 
-```
-uvicorn main:app --port=8081 --reload
-fastapi dev main.py 
-```
+---
 
-## MySQL Container
-```
-docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=1234qwer -p 3306:3306 -d mysql:latest
-```
+## 🌟 **Project Goals**
+
+>Blog를 Fast API로 구현하여 Fast API 이해 및 숙련도를 상승시키기.
+
+---
+
+## 🛠️ **Technology Stack**
+
+- **Backend**: FastAPI
+- **Frontend**: HTML, CSS, JavaScript, Bootstrap5
+- **Database**: SQLAlchemy, MySQL
+
+---
+
+## 🖥️ **Getting Started**
+
+Clone the repository and set up locally:
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/ChanLim-BD/FastAPI-Blog.git
+   ```
+
+2. **Install Dependencies**
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+3. **Set Up the Database**
+
+   ```bash
+   docker run --name mysql-container -e MYSQL_ROOT_PASSWORD="What you want" -p 3306:3306 -d mysql:latest
+   ```
+
+4. **Run the Server**
+
+   ```bash
+   uvicorn main:app --port=8081 --reload
+   ```
+
+5. Open your browser and navigate to: `http://localhost:8000/`.
+---
+
+## 📷 ScreenShot
+
+![Image](https://github.com/user-attachments/assets/cd4f0473-0080-40f9-925c-a2c3ad595a58)
+
+![Image](https://github.com/user-attachments/assets/197b0052-1739-44e8-a5b3-f9190aa63623)
+
+![Image](https://github.com/user-attachments/assets/46559b77-3235-4d2c-ac60-f8b577eaa7a1)
+
+---
+
+## 🌍 **Future Enhancements**
+
+* 로그인 로그아웃
+* 비동기 적용
+...
