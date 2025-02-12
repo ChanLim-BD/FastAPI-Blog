@@ -3,4 +3,4 @@ db_info.txt
 x.sql
 __pycache__
 .env
-/static
+/static/uploads/*
