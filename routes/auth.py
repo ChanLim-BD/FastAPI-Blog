@@ -36,6 +36,11 @@ async def register_user(name: str = Form(min_length=2, max_length=100),
                         email: EmailStr = Form(...),
                         password: str = Form(min_length=2, max_length=30),
                         conn: Connection = Depends(context_get_conn)):
+    
+    user = await auth_svc.get_user_by_email(conn=conn, email=email)
+    if user is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="해당 Email은 이미 등록되어 있습니다. ")
 
     hashed_password = get_hashed_password(password)
     await auth_svc.register_user(conn=conn, name=name, email=email, hashed_password=hashed_password)
