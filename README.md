@@ -6,7 +6,7 @@
 
 ## 🌟 **Project Goals**
 
->Blog를 Fast API로 구현하여 Fast API 이해 및 숙련도를 상승시키기.
+> Blog를 Fast API로 구현하여 Fast API 이해 및 숙련도를 상승시키기.
 
 ---
 
@@ -42,13 +42,20 @@ Clone the repository and set up locally:
    docker run --name mysql-container -e MYSQL_ROOT_PASSWORD="What you want" -p 3306:3306 -d mysql:latest
    ```
 
-4. **Run the Server**
+4. **Containerization: Build**
 
    ```bash
-   uvicorn main:app --port=8081 --reload
+   docker build -t fastapi-app .
    ```
 
-5. Open your browser and navigate to: `http://localhost:8081/`.
+5. **Containerization: Run**
+
+   ```bash
+   docker run -d -p 8081:8081 fastapi-app.
+   ```
+
+6. Open your browser and navigate to: `http://<Your IP>:8081/`.
+
 ---
 
 ## 📷 ScreenShot
@@ -63,6 +70,6 @@ Clone the repository and set up locally:
 
 ## 🌍 **Future Enhancements**
 
-* 로그인 로그아웃
-* 비동기 적용
+* CI - Github Action
+
 ...
