@@ -42,13 +42,19 @@ Clone the repository and set up locally:
    docker run --name mysql-container -e MYSQL_ROOT_PASSWORD="What you want" -p 3306:3306 -d mysql:latest
    ```
 
-4. **Run the Server**
+4. **Set up and run Redis Server**
+
+   ```bash
+   docker run --name redis-container -p 6379:6379 -d redis
+   ```
+
+5. **Run the Server**
 
    ```bash
    uvicorn main:app --port=8081 --reload
    ```
 
-5. Open your browser and navigate to: `http://localhost:8081/`.
+6. Open your browser and navigate to: `http://localhost:8081/`.
 ---
 
 ## 📷 ScreenShot
