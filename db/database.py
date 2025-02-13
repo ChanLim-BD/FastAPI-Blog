@@ -14,9 +14,14 @@ from dotenv import load_dotenv
 load_dotenv()
 DATABASE_CONN = os.getenv("DATABASE_CONN")
 
+"""동기 방식"""
 # engine = create_engine(DATABASE_CONN, #echo=True,
-#                        poolclass=QueuePool,
+                    #    poolclass=QueuePool,
+                    #    poolclass=NullPool, # Connection Pool 사용하지 않음. 
+                    #    pool_size=10, max_overflow=0,
+                    #    pool_recycle=300)
 
+"""비동기 방식"""
 engine: AsyncEngine = create_async_engine(DATABASE_CONN, #echo=True,
                     #   poolclass=QueuePool,
                     #   poolclass=NullPool, # Connection Pool 사용하지 않음. 
