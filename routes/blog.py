@@ -31,6 +31,9 @@ async def get_blog_by_id(request: Request, id: int, conn: Connection = Depends(c
     blog.content = util.newline_to_br(blog.content)
     is_valid_auth = auth_svc.check_valid_auth(session_user, blog_author_id=blog.author_id, blog_email=blog.email)
 
+    if session_user:
+        session_user['lastviewed_blog_id'] = blog.id
+
     return templates.TemplateResponse(
         request = request,
         name="show_blog.html",

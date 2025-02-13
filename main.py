@@ -25,12 +25,14 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"],
                    allow_credentials=True,
                    max_age=-1)
-# app.add_middleware(middleware.DummyMiddleware)
-load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
+# # app.add_middleware(middleware.DummyMiddleware)
+# load_dotenv()
+# SECRET_KEY = os.getenv("SECRET_KEY")
 # signed cookie 적용
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, max_age=3600)
+# app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, max_age=3600)
+
 app.add_middleware(middleware.MethodOverrideMiddleware)     # 얘 부터 적용됨...
+app.add_middleware(middleware.RedisSessionMiddleware)
 
 app.include_router(blog.router)
 app.include_router(auth.router)

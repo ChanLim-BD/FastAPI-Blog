@@ -10,6 +10,11 @@
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="/blogs">Home</a>
                 </li>
+                {% if session_user and session_user['lastviewed_blog_id'] %}
+                <li class="nav-item"></li>
+                    <a class="nav-link active" aria-current="page" href="/blogs/show/{{session_user['lastviewed_blog_id']}}">마지막 본 블로그</a>
+                </li>
+                {% endif %}
                 {% if session_user %}
                 <li class="nav-item">
                     <a class="nav-link" href="/blogs/new">Create New</a>
