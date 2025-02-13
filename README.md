@@ -14,7 +14,7 @@
 
 - **Backend**: FastAPI
 - **Frontend**: HTML, CSS, JavaScript, Bootstrap5
-- **Database**: SQLAlchemy, MySQL
+- **Database**: SQLAlchemy, MySQL, Redis
 
 ---
 
