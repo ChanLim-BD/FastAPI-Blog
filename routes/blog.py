@@ -52,18 +52,20 @@ async def create_blog_ui(request: Request, session_user = Depends(auth_svc.get_s
 @router.post("/new")
 async def create_blog(request: Request
                 , title = Form(min_length=2, max_length=200)
-                , author = Form(max_length=100)
                 , content = Form(min_length=2, max_length=4000)
                 , imagefile: UploadFile | None = File(None)
-                , conn: Connection = Depends(context_get_conn)):
+                , conn: Connection = Depends(context_get_conn)
+                , session_user = Depends(auth_svc.get_session_user_protected)):
     
     image_loc = None
+    author = session_user["name"]
+    author_id = session_user["id"]
     if len(imagefile.filename.strip()) > 0:
         # 반드시 transactional 한 처리를 위해 upload_file()이 먼저 수행되어야 함.
         image_loc = await blog_svc.upload_file(author=author, imagefile=imagefile)
-        await blog_svc.create_blog(conn, title=title, author=author, content=content, image_loc=image_loc)
+        await blog_svc.create_blog(conn, title=title, author_id=author_id, content=content, image_loc=image_loc)
     else:
-        await blog_svc.create_blog(conn, title=title, author=author, content=content, image_loc=image_loc)
+        await blog_svc.create_blog(conn, title=title, author_id=author_id, content=content, image_loc=image_loc)
 
 
     return RedirectResponse("/blogs", status_code=status.HTTP_302_FOUND)
@@ -84,19 +86,18 @@ async def update_blog_ui(request: Request, id: int, conn = Depends(context_get_c
 @router.put("/edit/{id}")
 async def update_blog(request: Request, id: int
                 , title = Form(min_length=2, max_length=200)
-                , author = Form(max_length=100)
                 , content = Form(min_length=2, max_length=4000)
                 , imagefile: UploadFile | None = File(None)
                 , conn: Connection = Depends(context_get_conn)
                 , session_user = Depends(auth_svc.get_session_user_protected)):
     
-    blog = await blog_svc.get_blog_by_id(conn, id=id)
     image_loc = None
+    author = session_user["name"]
     if len(imagefile.filename.strip()) > 0:
         image_loc = await blog_svc.upload_file(author=author, imagefile=imagefile)
-        await blog_svc.update_blog(conn=conn, id=id, title=title, author=author, content=content, image_loc=image_loc)
+        await blog_svc.update_blog(conn=conn, id=id, title=title, content=content, image_loc=image_loc)
     else:
-        await blog_svc.update_blog(conn=conn, id=id, title=title, author=author, content=content, image_loc=image_loc)
+        await blog_svc.update_blog(conn=conn, id=id, title=title, content=content, image_loc=image_loc)
     return RedirectResponse(f"/blogs/show/{id}", status_code=status.HTTP_302_FOUND)
     
 
@@ -108,6 +109,8 @@ async def delete_blog(request: Request, id: int, conn: Connection = Depends(cont
     # return RedirectResponse("/blogs", status_code=status.HTTP_302_FOUND)
 
 
+
+# Json Test 용
 @router.get("/show_json/{id}")
 async def get_blog_by_id_json(request: Request, id: int, conn: Connection = Depends(context_get_conn), session_user = Depends(auth_svc.get_session_user_protected)):
     blog = await blog_svc.get_blog_by_id(conn, id)
