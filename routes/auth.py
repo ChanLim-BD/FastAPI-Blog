@@ -56,3 +56,19 @@ async def login_ui(request: Request):
         context={}
     )
 
+@router.post("/login")
+async def login(email: EmailStr = Form(...),
+                password: str = Form(min_length=2, max_length=30),
+                conn: Connection = Depends(context_get_conn)):
+    # 입력 email로 db에 사용자가 등록되어 있는지 확인. 
+    userpass = await auth_svc.get_userpass_by_email(conn=conn, email=email)
+    if userpass is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="해당 이메일 사용자는 존재하지 않습니다.")
+    
+    is_correct_pw = verify_password(plain_password=password, hashed_password=userpass.hashed_password)
+    if not is_correct_pw:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="등록하신 이메일과 패스워드 정보가 입력 정보와 다릅니다.")
+    
+    return RedirectResponse("/blogs", status_code=status.HTTP_302_FOUND)
