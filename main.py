@@ -20,7 +20,7 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"],
                    allow_credentials=True,
                    max_age=-1)
-app.add_middleware(middleware.DummyMiddleware)
+# app.add_middleware(middleware.DummyMiddleware)
 app.add_middleware(middleware.MethodOverrideMiddleware)     # 얘 부터 적용됨...
 
 app.include_router(blog.router)
