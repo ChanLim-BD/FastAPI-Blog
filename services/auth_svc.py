@@ -91,9 +91,17 @@ def get_session_user_option(request: Request):
     if "session_user" in request.session.keys():
         return request.session["session_user"]
     
+    
 def get_session_user_protected(request: Request):
     if "session_user" not in request.session.keys():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="해당 서비스는 로그인이 필요합니다.")
     return request.session["session_user"]
     
+
+def check_valid_auth(session_user: dict, blog_author_id: int, blog_email: str):
+    if session_user is None:
+        return False
+    if ((session_user["id"] == blog_author_id) and (session_user["email"] == blog_email)):
+        return True
+    return False

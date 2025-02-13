@@ -1,5 +1,3 @@
-import os
-
 from fastapi import APIRouter, Request, Depends, Form, UploadFile, File, status
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -19,8 +17,6 @@ templates = Jinja2Templates(directory="templates")
 async def get_all_blogs(request: Request, conn: Connection = Depends(context_get_conn), session_user = Depends(auth_svc.get_session_user_option)):
     all_blogs = await blog_svc.get_all_blogs(conn)
     
-
-    
     return templates.TemplateResponse(
         request = request,
         name = "index.html",
@@ -33,12 +29,14 @@ async def get_all_blogs(request: Request, conn: Connection = Depends(context_get
 async def get_blog_by_id(request: Request, id: int, conn: Connection = Depends(context_get_conn), session_user = Depends(auth_svc.get_session_user_option)):
     blog = await blog_svc.get_blog_by_id(conn, id)
     blog.content = util.newline_to_br(blog.content)
+    is_valid_auth = auth_svc.check_valid_auth(session_user, blog_author_id=blog.author_id, blog_email=blog.email)
 
     return templates.TemplateResponse(
         request = request,
         name="show_blog.html",
         context = {"blog": blog,
-                   "session_user": session_user,})
+                   "session_user": session_user,
+                   "is_valid_auth": is_valid_auth,})
 
  
 @router.get("/new")
@@ -74,7 +72,12 @@ async def create_blog(request: Request
 @router.get("/edit/{id}")
 async def update_blog_ui(request: Request, id: int, conn = Depends(context_get_conn), session_user = Depends(auth_svc.get_session_user_protected)):
     blog = await blog_svc.get_blog_by_id(conn, id=id)
+    is_valid_auth = auth_svc.check_valid_auth(session_user, blog_author_id=blog.author_id, blog_email=blog.email)
     
+    if not is_valid_auth:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="해당 서비스는 권한이 없습니다.")
+
     return templates.TemplateResponse(
         request = request,
         name="edit_blog.html",
@@ -104,6 +107,12 @@ async def update_blog(request: Request, id: int
 @router.delete("/delete/{id}")
 async def delete_blog(request: Request, id: int, conn: Connection = Depends(context_get_conn), session_user = Depends(auth_svc.get_session_user_protected)):
     blog = await blog_svc.get_blog_by_id(conn=conn, id=id)
+    is_valid_auth = auth_svc.check_valid_auth(session_user, blog_author_id=blog.author_id, blog_email=blog.email)
+
+    if not is_valid_auth:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="해당 서비스는 권한이 없습니다")
+
     await blog_svc.delete_blog(conn=conn, id=id, image_loc=blog.image_loc)
     return JSONResponse(content="메시지가 삭제되었습니다", status_code=status.HTTP_200_OK)
     # return RedirectResponse("/blogs", status_code=status.HTTP_302_FOUND)
