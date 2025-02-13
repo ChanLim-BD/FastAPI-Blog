@@ -15,11 +15,12 @@ class Blog(BlogInput):
     modified_dt: datetime
 
 
-@dataclass
-class BlogData:
+class BlogData(BaseModel):
     id: int
     title: str
-    author: str
+    author_id: int
+    author: str | None = None
+    email: str | None = None
     content: str
     modified_dt: datetime
     image_loc: str | None = None # None 값이 맨 마지막에 와야한다 (필수)

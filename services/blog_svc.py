@@ -18,15 +18,19 @@ UPLOAD_DIR = os.getenv("UPLOAD_DIR")
 async def get_all_blogs(conn: Connection) -> List:
     try:
         query = """
-        SELECT id, title, author, content, 
+        SELECT a.id, title, author_id, b.name as author, b.email as email, content, 
         case when image_loc is null then '/static/default/blog_default.png'
              else image_loc end as image_loc
-        , modified_dt FROM blog;
+        , modified_dt 
+        FROM blog a
+          JOIN user b on a.author_id = b.id;
         """
         result = await conn.execute(text(query))
         all_blogs = [BlogData(id=row.id,
               title=row.title,
+              author_id=row.author_id,
               author=row.author,
+              email=row.email,
               content=util.truncate_text(row.content),
               image_loc=row.image_loc, 
               modified_dt=row.modified_dt) for row in result]
@@ -46,8 +50,10 @@ async def get_all_blogs(conn: Connection) -> List:
 async def get_blog_by_id(conn: Connection, id: int):
     try:
         query = f"""
-        SELECT id, title, author, content, image_loc, modified_dt from blog
-        where id = :id
+        SELECT a.id, title, author_id, b.name as author, b.email as email, content, image_loc, modified_dt 
+        FROM blog a
+            JOIN user b on a.author_id = b.id
+        where a.id = :id
         """
         stmt = text(query)
         bind_stmt = stmt.bindparams(id=id)
@@ -58,7 +64,8 @@ async def get_blog_by_id(conn: Connection, id: int):
                                 detail=f"해당 id {id}는(은) 존재하지 않습니다.")
 
         row = result.fetchone()
-        blog = BlogData(id=row[0], title=row[1], author=row[2], content=row[3], image_loc=row[4], modified_dt=row[5])
+        # blog = BlogData(id=row[0], title=row[1], author_id=row[2], author=row[3], email=row[4], content=row[5], image_loc=row[6], modified_dt=row[7])
+        blog = BlogData(id=row.id, title=row.title, author_id=row.author_id, author=row.author, email=row.email, content=row.content, image_loc=row.image_loc, modified_dt=row.modified_dt)
         if blog.image_loc is None:
             blog.image_loc = '/static/default/blog_default.png'
         
