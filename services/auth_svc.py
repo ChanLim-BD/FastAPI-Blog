@@ -1,4 +1,4 @@
-from fastapi import status
+from fastapi import Request, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy import text, Connection
 from sqlalchemy.exc import SQLAlchemyError
@@ -80,3 +80,12 @@ async def register_user(conn: Connection, name: str, email:str, hashed_password:
         await conn.rollback()
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                             detail="요청하신 서비스가 잠시 내부적으로 문제가 발생하였습니다.")
+    
+
+def get_session(request: Request):
+    return request.session
+
+
+def get_session_user(request: Request):
+    if "session_user" in request.session.keys():
+        return request.session["session_user"]
