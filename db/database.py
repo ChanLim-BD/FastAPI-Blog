@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Connection
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.pool import QueuePool, NullPool
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSession
+from typing import AsyncGenerator
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
@@ -72,6 +73,6 @@ AsyncSessionLocal = sessionmaker(
 Base = declarative_base()
 
 # 데이터베이스 세션을 얻기 위한 의존성
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         yield session
