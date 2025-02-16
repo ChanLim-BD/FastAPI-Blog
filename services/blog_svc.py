@@ -3,9 +3,12 @@ import aiofiles as aio
 
 from fastapi import status, UploadFile
 from fastapi.exceptions import HTTPException
-from sqlalchemy import text, Connection
+from sqlalchemy import text, Connection, select, case, label, join
+from sqlalchemy.orm import aliased
 from sqlalchemy.exc import SQLAlchemyError
-from schemas.blog_schema import Blog, BlogData
+from sqlalchemy.ext.asyncio import AsyncSession
+from schemas.blog_schema import  BlogData
+from db.model import User, Blog
 from utils import util
 from typing import List
 from dotenv import load_dotenv
@@ -46,6 +49,48 @@ async def get_all_blogs(conn: Connection) -> List:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="알수없는 이유로 서비스 오류가 발생하였습니다")
+
+
+async def get_all_blogs_orm(db: AsyncSession) -> List:
+    try:
+        user_alias = aliased(User)
+        query = (
+            select(
+                Blog.id,
+                Blog.title,
+                Blog.author_id,
+                user_alias.name.label('author'),
+                user_alias.email,
+                Blog.content,
+                case(
+                    (Blog.image_loc == None, '/static/default/blog_default.png'),
+                    else_=Blog.image_loc
+                ).label('image_loc'),
+                Blog.modified_dt
+            )
+            .join(user_alias, Blog.author_id == user_alias.id)  # Blog와 User를 조인
+            .order_by(Blog.modified_dt.desc())  # 최신 순으로 정렬
+        )
+
+        result = await db.execute(query)
+        all_blogs = [BlogData(id=row.id,
+              title=row.title,
+              author_id=row.author_id,
+              author=row.author,
+              email=row.email,
+              content=util.truncate_text(row.content),
+              image_loc=row.image_loc, 
+              modified_dt=row.modified_dt) for row in result]
+        return all_blogs  
+    except SQLAlchemyError as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                            detail="요청하신 서비스가 잠시 내부적으로 문제가 발생하였습니다.")
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="알수없는 이유로 서비스 오류가 발생하였습니다")
+
 
 
 async def get_blog_by_id(conn: Connection, id: int):

@@ -4,6 +4,10 @@ from fastapi.templating import Jinja2Templates
 from fastapi.exceptions import HTTPException
 from db.database import context_get_conn
 from sqlalchemy import Connection
+from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from db.model import Blog
+from db.database import get_db
 from services import blog_svc, auth_svc
 from utils import util
 
@@ -16,14 +20,28 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/")
 async def get_all_blogs(request: Request, conn: Connection = Depends(context_get_conn), session_user = Depends(auth_svc.get_session_user_option)):
     all_blogs = await blog_svc.get_all_blogs(conn)
-    
+
+
     return templates.TemplateResponse(
         request = request,
         name = "index.html",
         context = {"all_blogs": all_blogs,
                    "session_user": session_user,}
     )
+
+
+@router.get("/ORM/")
+async def get_all_blogs_orm(request: Request, db: AsyncSession = Depends(get_db), session_user = Depends(auth_svc.get_session_user_option)):
+    all_blogs = await blog_svc.get_all_blogs_orm(db)
     
+    return templates.TemplateResponse(
+        request = request,
+        name = "index_orm.html",
+        context = {"all_blogs": all_blogs,
+                   "session_user": session_user,}
+    )
+
+
 
 @router.get("/show/{id}")
 async def get_blog_by_id(request: Request, id: int, conn: Connection = Depends(context_get_conn), session_user = Depends(auth_svc.get_session_user_option)):

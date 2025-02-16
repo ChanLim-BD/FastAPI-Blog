@@ -3,11 +3,15 @@ import os
 from sqlalchemy import create_engine, Connection
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.pool import QueuePool, NullPool
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSession
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 from contextlib import contextmanager
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from dotenv import load_dotenv
+
 
 
 # database connection URL
@@ -51,3 +55,23 @@ async def context_get_conn():
     finally:
         if conn:
             await conn.close()
+
+
+
+
+# 엔진 생성
+engine_orm = create_async_engine(DATABASE_CONN, echo=True)
+
+# 세션 로컬 생성
+AsyncSessionLocal = sessionmaker(
+    engine_orm,
+    expire_on_commit=False,
+    class_=AsyncSession
+)
+# 모델의 기본 클래스 생성
+Base = declarative_base()
+
+# 데이터베이스 세션을 얻기 위한 의존성
+async def get_db() -> AsyncSession:
+    async with AsyncSessionLocal() as session:
+        yield session
