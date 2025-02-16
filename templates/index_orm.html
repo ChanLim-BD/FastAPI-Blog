@@ -1,0 +1,34 @@
+{% extends "/layout/main_layout.html" %}
+
+{% block content %}
+<!-- Main Content -->
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <!-- Blog Posts -->
+        <div class="col-lg-8">
+            {% for blog in all_blogs %}
+            <div class="mb-4 border-bottom">
+                <h2 class="fw-bold">{{ blog.title }}</h2>
+                <!-- Display the modified date and author -->
+                <p class="text-muted">Posted on {{ blog.modified_dt }} by {{ blog.author_id }}</p> 
+                <div class="row">
+                    <div class="col-lg-8">
+                        <p class="mt-3">{{ blog.content | safe }}</p>
+                    </div>
+                    <div class="col-lg-4">
+                        <!-- Handle cases where image_loc might be None -->
+                        {% if blog.image_loc %}
+                            <img src="{{ blog.image_loc }}" class="img-fluid" alt="Blog Image">
+                        {% else %}
+                            <img src="default-image.jpg" class="img-fluid" alt="Default Blog Image"> <!-- Use a placeholder image if no image is available -->
+                        {% endif %}
+                    </div>
+                </div>
+                <a href="/blogs/show/{{ blog.id }}" class="btn btn-primary mb-4">Read More</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- End of Main Content-->
+{% endblock %}

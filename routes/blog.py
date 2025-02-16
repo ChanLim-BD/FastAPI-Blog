@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.exceptions import HTTPException
 from db.database import context_get_conn
-from sqlalchemy import Connection, select
+from sqlalchemy import Connection
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.model import Blog
@@ -20,7 +20,8 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/")
 async def get_all_blogs(request: Request, conn: Connection = Depends(context_get_conn), session_user = Depends(auth_svc.get_session_user_option)):
     all_blogs = await blog_svc.get_all_blogs(conn)
-    
+
+
     return templates.TemplateResponse(
         request = request,
         name = "index.html",
@@ -30,10 +31,16 @@ async def get_all_blogs(request: Request, conn: Connection = Depends(context_get
 
 
 @router.get("/ORM/")
-async def get_blogs(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Blog))
-    blogs = result.scalars().all()
-    return blogs
+async def get_all_blogs_orm(request: Request, db: AsyncSession = Depends(get_db), session_user = Depends(auth_svc.get_session_user_option)):
+    all_blogs = await blog_svc.get_all_blogs_orm(db)
+    
+    return templates.TemplateResponse(
+        request = request,
+        name = "index_orm.html",
+        context = {"all_blogs": all_blogs,
+                   "session_user": session_user,}
+    )
+
 
 
 @router.get("/show/{id}")
